@@ -15,7 +15,7 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/auth',
-      builder: (context, state) => const AuthScreen(),
+      builder: (context, state) => AuthScreen(),
     ),
     GoRoute(
       path: '/chat',

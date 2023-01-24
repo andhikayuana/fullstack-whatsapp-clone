@@ -26,10 +26,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   void _onCountryChanged(CountryChanged event, Emitter<AuthState> emit) {
-    emit(state.copyWith(
-      countryName: event.countryName,
-      countryCode: event.countryCode,
-    ));
+    emit(state.copyWith(country: event.country));
   }
 
   void _onPhoneNumberChanged(
@@ -43,7 +40,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(state.copyWith(status: AuthStatus.loading));
 
       await _authRepository.verifyCode(
-        phoneNumber: "${state.countryCode}${state.phoneNumber}",
+        phoneNumber: "+${state.country.countryCode}${state.phoneNumber}",
         onCodeSent: (verificationId, forceResendingToken) {
           add(CodeSent(
               verificationId: verificationId, token: forceResendingToken));

@@ -1,3 +1,4 @@
+import 'package:country/country.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -6,16 +7,12 @@ import 'package:flutter/material.dart';
 abstract class AuthEvent extends Equatable {}
 
 class CountryChanged extends AuthEvent {
-  final String countryName;
-  final String countryCode;
+  final Country country;
 
-  CountryChanged({
-    required this.countryName,
-    required this.countryCode,
-  });
+  CountryChanged({required this.country});
 
   @override
-  List<Object?> get props => [countryName, countryCode];
+  List<Object?> get props => [country];
 }
 
 class PhoneNumberChanged extends AuthEvent {
