@@ -41,7 +41,5 @@ class AuthRepositoryImpl extends AuthRepository {
   }
 
   @override
-  bool alreadyLogin() {
-    return _firebaseAuth.currentUser != null;
-  }
+  bool alreadyLogin() => _firebaseAuth.currentUser != null;
 }

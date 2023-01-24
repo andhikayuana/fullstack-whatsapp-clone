@@ -3,7 +3,9 @@ import 'package:client/domain/repositories/auth_repository.dart';
 import 'package:client/presentation/splash/bloc/splash_event.dart';
 import 'package:client/presentation/splash/bloc/splash_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injectable/injectable.dart';
 
+@injectable
 class SplashBloc extends Bloc<SplashEvent, SplashState> {
   final AuthRepository _authRepository;
 
