@@ -27,7 +27,6 @@ class AuthRepositoryImpl extends AuthRepository {
       phoneNumber: phoneNumber,
       timeout: const Duration(seconds: 60),
       verificationCompleted: (AuthCredential credential) {
-
         _firebaseAuth.signInWithCredential(credential);
         onVerificationCompleted?.call(credential as PhoneAuthCredential);
       },
@@ -39,5 +38,10 @@ class AuthRepositoryImpl extends AuthRepository {
       },
       codeAutoRetrievalTimeout: (String verificationId) {},
     );
+  }
+
+  @override
+  bool alreadyLogin() {
+    return _firebaseAuth.currentUser != null;
   }
 }
