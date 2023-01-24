@@ -42,4 +42,9 @@ class AuthRepositoryImpl extends AuthRepository {
 
   @override
   bool alreadyLogin() => _firebaseAuth.currentUser != null;
+
+  @override
+  Future<void> signInWithCredential(AuthCredential credential) async {
+    await _firebaseAuth.signInWithCredential(credential);
+  }
 }

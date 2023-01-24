@@ -7,6 +7,8 @@ abstract class AuthRepository {
       PhoneVerificationFailed? onVerificationFailed,
       PhoneCodeSent? onCodeSent});
 
+  Future<void> signInWithCredential(AuthCredential credential);
+
   User? getUser();
 
   bool alreadyLogin();
