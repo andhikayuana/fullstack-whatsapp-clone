@@ -12,10 +12,9 @@ class SplashScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     context.read<SplashBloc>().add(CheckCurrentAccount());
     return BlocConsumer<SplashBloc, SplashState>(
+      listenWhen: (previous, current) => current is Loaded,
       listener: (context, state) {
-        if (state is Loaded) {
-          context.go('/chat');
-        }
+        context.go('/chat');
       },
       builder: (context, state) {
         return Scaffold(

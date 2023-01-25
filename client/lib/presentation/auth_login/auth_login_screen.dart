@@ -1,72 +1,42 @@
 import 'package:client/di/injection.dart';
-import 'package:client/presentation/auth/bloc/auth_bloc.dart';
-import 'package:client/presentation/auth/bloc/auth_event.dart';
-import 'package:client/presentation/auth/bloc/auth_state.dart';
-import 'package:client/presentation/auth/view/verify_phone_number_view.dart';
+import 'package:client/presentation/auth_login/bloc/auth_login_bloc.dart';
+import 'package:client/presentation/auth_login/bloc/auth_login_event.dart';
+import 'package:client/presentation/auth_login/bloc/auth_login_state.dart';
 import 'package:client/ui/WhatsAppTheme.dart';
 import 'package:country/country.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
-class AuthScreen extends StatelessWidget {
-  const AuthScreen({super.key});
+class AuthLoginScreen extends StatelessWidget {
+  const AuthLoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AuthBloc, AuthState>(
-      listener: (context, state) {
-        print("LISTENER");
-        print(state.toString());
-        // switch (state.status) {
-        //   case AuthStatus.codeSent:
-        //     print("CODE SENT");
-        //     break;
-        //   case AuthStatus.verificationCompleted:
-        //     print("COMPLETED");
-        //     context.go('/chat');
-        //     break;
-        //   default:
-        // }
-      },
-      builder: (context, state) {
-        return Scaffold(
-          appBar: AppBar(
-            centerTitle: true,
-            title: const Text("Enter your phone number"),
-          ),
-          body: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: _contentView(context, state),
-          ),
-        );
-      },
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text("Enter your phone number"),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(20.0),
+        child: _AuthLoginView(),
+      ),
     );
   }
-
-  Widget _contentView(BuildContext context, AuthState state) {
-    if (state is AuthStateChanged) {
-      return const EnterPhoneNumberView();
-    } else if (state is AuthStateVerifyChanged) {
-      return const VerifyPhoneNumberView();
-    } else {
-      return const Text("Unknown state");
-    }
-  }
 }
 
-class EnterPhoneNumberView extends StatefulWidget {
-  const EnterPhoneNumberView({
-    Key? key,
-  }) : super(key: key);
+class _AuthLoginView extends StatefulWidget {
+  const _AuthLoginView({super.key});
 
   @override
-  State<EnterPhoneNumberView> createState() => _EnterPhoneNumberViewState();
+  State<_AuthLoginView> createState() => _AuthLoginViewState();
 }
 
-class _EnterPhoneNumberViewState extends State<EnterPhoneNumberView> {
-  final _countryCodeController = TextEditingController();
-  final _phoneNumberController = TextEditingController();
-  final _authBloc = getIt<AuthBloc>();
+class _AuthLoginViewState extends State<_AuthLoginView> {
+  final TextEditingController _countryCodeController = TextEditingController();
+  final TextEditingController _phoneNumberController = TextEditingController();
+  final AuthLoginBloc _authLoginBloc = getIt<AuthLoginBloc>();
 
   @override
   void initState() {
@@ -76,8 +46,13 @@ class _EnterPhoneNumberViewState extends State<EnterPhoneNumberView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AuthBloc, AuthState>(
-      bloc: _authBloc,
+    return BlocConsumer<AuthLoginBloc, AuthLoginState>(
+      bloc: _authLoginBloc,
+      listenWhen: (previous, current) =>
+          current.status == AuthLoginStatus.smsCodeSent,
+      listener: (context, state) {
+        context.push('/auth-verify');
+      },
       builder: (context, state) {
         return Form(
           child: Column(
@@ -105,7 +80,7 @@ class _EnterPhoneNumberViewState extends State<EnterPhoneNumberView> {
                     child: Column(
                       children: [
                         DropdownButtonFormField<Country>(
-                          value: (state as AuthStateChanged).selectedCountry,
+                          value: state.country,
                           items: Countries.values
                               .map(
                                 (Country country) => DropdownMenuItem(
@@ -117,7 +92,7 @@ class _EnterPhoneNumberViewState extends State<EnterPhoneNumberView> {
                               .toList(),
                           isExpanded: true,
                           onChanged: (value) {
-                            _authBloc.add(OnCountrySelected(value!));
+                            _authLoginBloc.add(OnCountryChanged(value!));
                             _countryCodeController.text = value.countryCode;
                           },
                         ),
@@ -143,7 +118,8 @@ class _EnterPhoneNumberViewState extends State<EnterPhoneNumberView> {
                                 keyboardType: TextInputType.phone,
                                 controller: _phoneNumberController,
                                 onChanged: (value) {
-                                  _authBloc.add(OnPhoneNumberChanged(value));
+                                  _authLoginBloc
+                                      .add(OnPhoneNumberChanged(value));
                                 },
                               ),
                             ),
@@ -157,7 +133,7 @@ class _EnterPhoneNumberViewState extends State<EnterPhoneNumberView> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  _authBloc.add(OnNextClicked(false));
+                  _authLoginBloc.add(OnNextClicked());
                 },
                 child: const Text("Next"),
               ),
