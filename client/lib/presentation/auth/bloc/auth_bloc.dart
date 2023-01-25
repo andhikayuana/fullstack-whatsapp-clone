@@ -2,63 +2,67 @@ import 'dart:async';
 import 'package:client/domain/repositories/auth_repository.dart';
 import 'package:client/presentation/auth/bloc/auth_event.dart';
 import 'package:client/presentation/auth/bloc/auth_state.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:country/country.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 //https://dhruvnakum.xyz/flutterfire-x-bloc-phone-authentication
+// @injectable
+// class AuthBloc extends Bloc<AuthEvent, AuthState> {
+//   final AuthRepository _authRepository;
+
+//   AuthBloc(this._authRepository) : super(const AuthState()) {
+
+//     });
+// }
+
 @injectable
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
 
-  AuthBloc(this._authRepository) : super(const AuthState()) {
-    on<CountryChanged>(_onCountryChanged);
-    on<PhoneNumberChanged>(_onPhoneNumberChanged);
-    on<NextClicked>(_onNextClicked);
-    on<CodeSent>(
-        (event, emit) => emit(state.copyWith(status: AuthStatus.codeSent)));
-    on<VerificationCompleted>((event, emit) async {
-      await _authRepository.signInWithCredential(event.credential).whenComplete(
-            () =>
-                emit(state.copyWith(status: AuthStatus.verificationCompleted)),
-          );
-    });
+  AuthBloc(this._authRepository) : super(AuthStateChanged()) {
+    debugPrint("AuthBloc Consttructor");
+    //todo
+    on<OnCountrySelected>(_onCountrySelected);
+    on<OnPhoneNumberChanged>(_onPhoneNumberChanged);
+    on<OnNextClicked>(_onNextClicked);
+    on<OnSmsCodeSent>(_onSmsCodeSent);
   }
 
-  void _onCountryChanged(CountryChanged event, Emitter<AuthState> emit) {
-    emit(state.copyWith(country: event.country));
+  void _onSmsCodeSent(OnSmsCodeSent event, emit) {
+    emit(AuthStateVerifyChanged(
+        verificationId: event.verificationId, token: event.token, smsCode: ""));
   }
 
-  void _onPhoneNumberChanged(
-      PhoneNumberChanged event, Emitter<AuthState> emit) {
-    emit(state.copyWith(phoneNumber: event.phoneNumber));
-  }
-
-  Future<void> _onNextClicked(
-      NextClicked event, Emitter<AuthState> emit) async {
-    try {
-      emit(state.copyWith(status: AuthStatus.loading));
-
+  Future<void> _onNextClicked(OnNextClicked event, emit) async {
+    if (!event.isVerify) {
+      final currentState = state as AuthStateChanged;
+      final phoneNumber =
+          "+${currentState.selectedCountry.countryCode}${currentState.phoneNumber}";
       await _authRepository.verifyCode(
-        phoneNumber: "+${state.country.countryCode}${state.phoneNumber}",
-        onCodeSent: (verificationId, forceResendingToken) {
-          add(CodeSent(
-              verificationId: verificationId, token: forceResendingToken));
-
-          final PhoneAuthCredential credential = PhoneAuthProvider.credential(
-            verificationId: verificationId,
-            smsCode: '123456',
-          );
-
-          add(VerificationCompleted(credential: credential));
-        },
+        phoneNumber: phoneNumber,
+        onCodeSent: (verificationId, forceResendingToken) =>
+            add(OnSmsCodeSent(verificationId, forceResendingToken!)),
         onVerificationCompleted: (phoneAuthCredential) {
-          add(VerificationCompleted(credential: phoneAuthCredential));
+          debugPrint('onVerificationCompleted');
         },
-        onVerificationFailed: (error) {},
+        onVerificationFailed: (error) {
+          debugPrint('onVerificationFailed');
+          debugPrint(error.toString());
+        },
       );
-    } catch (e) {
-      print(e);
     }
+  }
+
+  void _onPhoneNumberChanged(OnPhoneNumberChanged event, emit) {
+    final currentState = state as AuthStateChanged;
+    final phoneNumber = event.phoneNumber;
+    emit(currentState.copyWith(phoneNumber: phoneNumber));
+  }
+
+  void _onCountrySelected(OnCountrySelected event, emit) {
+    final currentState = state as AuthStateChanged;
+    emit(currentState.copyWith(selectedCountry: event.selectedCountry));
   }
 }

@@ -1,41 +1,57 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:country/country.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 
-class AuthState extends Equatable {
-  final AuthStatus status;
-  final Country country;
+@immutable
+abstract class AuthState extends Equatable {}
+
+class AuthStateChanged extends AuthState {
+  final Country selectedCountry;
   final String phoneNumber;
 
-  const AuthState({
-    this.status = AuthStatus.uninitialized,
-    this.country = Countries.idn,
-    this.phoneNumber = "86812345678",
+  AuthStateChanged({
+    this.selectedCountry = Countries.idn,
+    this.phoneNumber = "",
   });
 
-  AuthState copyWith({
-    AuthStatus? status,
-    Country? country,
+  @override
+  List<Object?> get props => [selectedCountry, phoneNumber];
+
+  AuthStateChanged copyWith({
+    Country? selectedCountry,
     String? phoneNumber,
   }) {
-    return AuthState(
-      status: status ?? this.status,
-      country: country ?? this.country,
+    return AuthStateChanged(
+      selectedCountry: selectedCountry ?? this.selectedCountry,
       phoneNumber: phoneNumber ?? this.phoneNumber,
     );
   }
-
-  @override
-  List<Object?> get props => [
-        status,
-        country,
-        phoneNumber,
-      ];
 }
 
-enum AuthStatus {
-  uninitialized,
-  loading,
-  codeSent,
-  verificationCompleted,
-  verificationFailed,
+class AuthStateVerifyChanged extends AuthState {
+  final String verificationId;
+  final int token;
+  final String smsCode;
+
+  AuthStateVerifyChanged({
+    required this.verificationId,
+    required this.token,
+    required this.smsCode,
+  });
+
+  @override
+  List<Object?> get props => [verificationId, token, smsCode];
+
+  AuthStateVerifyChanged copyWith({
+    String? verificationId,
+    int? token,
+    String? smsCode,
+  }) {
+    return AuthStateVerifyChanged(
+      verificationId: verificationId ?? this.verificationId,
+      token: token ?? this.token,
+      smsCode: smsCode ?? this.smsCode,
+    );
+  }
 }

@@ -13,6 +13,7 @@ Future<void> main() async {
   await FirebaseAppCheck.instance.activate(
     webRecaptchaSiteKey: 'recaptcha-v3-site-key',
   );
+  Bloc.observer = WhatsAppBlocObserver();
   runApp(const WhatsAppClone());
 }
 
@@ -35,5 +36,13 @@ class WhatsAppClone extends StatelessWidget {
         routerConfig: router,
       ),
     );
+  }
+}
+
+class WhatsAppBlocObserver extends BlocObserver {
+  @override
+  void onChange(BlocBase bloc, Change change) {
+    super.onChange(bloc, change);
+    debugPrint('${bloc.runtimeType} $change');
   }
 }

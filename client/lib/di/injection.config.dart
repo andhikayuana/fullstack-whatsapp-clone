@@ -29,13 +29,13 @@ extension GetItInjectableX on _i1.GetIt {
       environment,
       environmentFilter,
     );
-    final appModule = _$AppModule();
+    final firebaseModule = _$FirebaseModule();
     await gh.factoryAsync<_i3.FirebaseApp>(
-      () => appModule.firebaseInit,
+      () => firebaseModule.firebaseInit,
       preResolve: true,
     );
-    gh.factory<_i4.FirebaseAuth>(() => appModule.firebaseAuth);
-    gh.factory<_i5.FirebaseFirestore>(() => appModule.firebaseFirestore);
+    gh.factory<_i4.FirebaseAuth>(() => firebaseModule.firebaseAuth);
+    gh.factory<_i5.FirebaseFirestore>(() => firebaseModule.firebaseFirestore);
     gh.factory<_i6.AuthRepository>(
         () => _i7.AuthRepositoryImpl(gh<_i4.FirebaseAuth>()));
     gh.factory<_i8.SplashBloc>(() => _i8.SplashBloc(gh<_i6.AuthRepository>()));
@@ -44,4 +44,4 @@ extension GetItInjectableX on _i1.GetIt {
   }
 }
 
-class _$AppModule extends _i10.AppModule {}
+class _$FirebaseModule extends _i10.FirebaseModule {}

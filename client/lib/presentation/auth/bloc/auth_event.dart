@@ -1,53 +1,43 @@
 import 'package:country/country.dart';
 import 'package:equatable/equatable.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 @immutable
 abstract class AuthEvent extends Equatable {}
 
-class CountryChanged extends AuthEvent {
-  final Country country;
+class OnCountrySelected extends AuthEvent {
+  final Country selectedCountry;
 
-  CountryChanged({required this.country});
+  OnCountrySelected(this.selectedCountry);
 
   @override
-  List<Object?> get props => [country];
+  List<Object?> get props => [selectedCountry];
 }
 
-class PhoneNumberChanged extends AuthEvent {
+class OnPhoneNumberChanged extends AuthEvent {
   final String phoneNumber;
 
-  PhoneNumberChanged({
-    required this.phoneNumber,
-  });
+  OnPhoneNumberChanged(this.phoneNumber);
 
   @override
   List<Object?> get props => [phoneNumber];
 }
 
-class NextClicked extends AuthEvent {
-  @override
-  List<Object?> get props => [];
-}
+class OnNextClicked extends AuthEvent {
+  //verification or not
+  final bool isVerify;
 
-class VerificationCompleted extends AuthEvent {
-  final AuthCredential credential;
-
-  VerificationCompleted({required this.credential});
+  OnNextClicked(this.isVerify);
 
   @override
-  List<Object?> get props => [credential];
+  List<Object?> get props => [isVerify];
 }
 
-class CodeSent extends AuthEvent {
+class OnSmsCodeSent extends AuthEvent {
   final String verificationId;
-  final int? token;
+  final int token;
 
-  CodeSent({
-    required this.verificationId,
-    required this.token,
-  });
+  OnSmsCodeSent(this.verificationId, this.token);
 
   @override
   List<Object?> get props => [verificationId, token];
