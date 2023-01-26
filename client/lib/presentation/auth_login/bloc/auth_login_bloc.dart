@@ -1,6 +1,4 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -15,13 +13,27 @@ class AuthLoginBloc extends Bloc<AuthLoginEvent, AuthLoginState> {
   AuthLoginBloc(
     this._authRepository,
   ) : super(const AuthLoginState()) {
-    debugPrint("AUTH BLOC CONSTRUCTOR");
     on<OnCountryChanged>(_onCountryChanged);
     on<OnPhoneNumberChanged>(_onPhoneNumberChanged);
     on<OnNextClicked>(_onNextClicked);
+    on<OnEditClicked>(_onEditClicked);
+    on<OnOkClicked>(_onOkClicked);
     on<OnSmsCodeSent>(_onSmsCodeSent);
     on<OnVerificationFailed>(_onVerificationFailed);
   }
+
+  Future<void> _onOkClicked(OnOkClicked event, emit) async {
+    emit(state.copyWith(status: AuthLoginStatus.loading));
+    await _authRepository.verifyCode(
+      phoneNumber: state.phoneNumberFull,
+      onCodeSent: (verificationId, forceResendingToken) =>
+          add(OnSmsCodeSent(verificationId, forceResendingToken!)),
+      onVerificationFailed: (error) => add(OnVerificationFailed(error)),
+    );
+  }
+
+  void _onEditClicked(OnEditClicked event, emit) =>
+      emit(state.copyWith(status: AuthLoginStatus.stateChanged));
 
   void _onVerificationFailed(OnVerificationFailed event, emit) =>
       emit(state.copyWith(status: AuthLoginStatus.verificationFailed));
@@ -29,15 +41,8 @@ class AuthLoginBloc extends Bloc<AuthLoginEvent, AuthLoginState> {
   void _onSmsCodeSent(OnSmsCodeSent event, emit) =>
       emit(state.copyWith(status: AuthLoginStatus.smsCodeSent));
 
-  Future<void> _onNextClicked(OnNextClicked event, emit) async {
-    final phoneNumberFull = "+${state.country.countryCode}${state.phoneNumber}";
-    await _authRepository.verifyCode(
-      phoneNumber: phoneNumberFull,
-      onCodeSent: (verificationId, forceResendingToken) =>
-          add(OnSmsCodeSent(verificationId, forceResendingToken!)),
-      onVerificationFailed: (error) => add(OnVerificationFailed(error)),
-    );
-  }
+  void _onNextClicked(OnNextClicked event, emit) =>
+      emit(state.copyWith(status: AuthLoginStatus.showConfirmDialog));
 
   void _onPhoneNumberChanged(OnPhoneNumberChanged event, emit) =>
       emit(state.copyWith(

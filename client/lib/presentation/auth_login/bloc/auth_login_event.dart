@@ -5,7 +5,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 @immutable
-abstract class AuthLoginEvent extends Equatable {}
+abstract class AuthLoginEvent extends Equatable {
+  @override
+  List<Object?> get props => [];
+}
 
 class OnCountryChanged extends AuthLoginEvent {
   final Country country;
@@ -25,10 +28,11 @@ class OnPhoneNumberChanged extends AuthLoginEvent {
   List<Object?> get props => [phoneNumber];
 }
 
-class OnNextClicked extends AuthLoginEvent {
-  @override
-  List<Object?> get props => [];
-}
+class OnNextClicked extends AuthLoginEvent {}
+
+class OnEditClicked extends AuthLoginEvent {}
+
+class OnOkClicked extends AuthLoginEvent {}
 
 class OnSmsCodeSent extends AuthLoginEvent {
   final String verificationId;

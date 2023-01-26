@@ -15,6 +15,8 @@ class AuthLoginState extends Equatable {
     this.country = Countries.idn,
   });
 
+  String get phoneNumberFull => "+${country.countryCode}$phoneNumber";
+
   @override
   List<Object?> get props => [status, phoneNumber, country];
 
@@ -34,6 +36,8 @@ class AuthLoginState extends Equatable {
 enum AuthLoginStatus {
   uninitialized,
   stateChanged,
+  showConfirmDialog,
   smsCodeSent,
   verificationFailed,
+  loading,
 }

@@ -18,7 +18,7 @@ class AuthLoginScreen extends StatelessWidget {
         centerTitle: true,
         title: const Text("Enter your phone number"),
       ),
-      body: Padding(
+      body: const Padding(
         padding: EdgeInsets.all(20.0),
         child: _AuthLoginView(),
       ),
@@ -48,10 +48,19 @@ class _AuthLoginViewState extends State<_AuthLoginView> {
   Widget build(BuildContext context) {
     return BlocConsumer<AuthLoginBloc, AuthLoginState>(
       bloc: _authLoginBloc,
-      listenWhen: (previous, current) =>
-          current.status == AuthLoginStatus.smsCodeSent,
       listener: (context, state) {
-        context.push('/auth-verify');
+        switch (state.status) {
+          case AuthLoginStatus.smsCodeSent:
+            context.push('/auth-verify');
+            break;
+          case AuthLoginStatus.showConfirmDialog:
+            _showNextConfirmDialog(context, state.phoneNumberFull);
+            break;
+          case AuthLoginStatus.loading:
+            _showLoadingDialog(context);
+            break;
+          default:
+        }
       },
       builder: (context, state) {
         return Form(
@@ -132,13 +141,67 @@ class _AuthLoginViewState extends State<_AuthLoginView> {
                 ],
               ),
               ElevatedButton(
-                onPressed: () {
-                  _authLoginBloc.add(OnNextClicked());
-                },
+                onPressed: () => _authLoginBloc.add(OnNextClicked()),
                 child: const Text("Next"),
               ),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showLoadingDialog(BuildContext context) {
+    return showDialog<void>(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        return const AlertDialog(
+          content: Text("Please wait..."),
+        );
+      },
+    );
+  }
+
+  Future<void> _showNextConfirmDialog(
+    BuildContext context,
+    String phoneNumberFull,
+  ) {
+    return showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('We will verifying the phone number:'),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Text(
+                  phoneNumberFull,
+                  style: const TextStyle(fontSize: 20),
+                ),
+              ),
+              const Text('Is this OK, or would you like to edit the number?'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                _authLoginBloc.add(OnEditClicked());
+                Navigator.of(context).pop();
+              },
+              child: const Text('EDIT'),
+            ),
+            TextButton(
+              onPressed: () {
+                _authLoginBloc.add(OnOkClicked());
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+          actionsAlignment: MainAxisAlignment.spaceBetween,
         );
       },
     );
