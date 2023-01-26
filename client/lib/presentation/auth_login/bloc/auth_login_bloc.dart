@@ -24,7 +24,7 @@ class AuthLoginBloc extends Bloc<AuthLoginEvent, AuthLoginState> {
 
   Future<void> _onOkClicked(OnOkClicked event, emit) async {
     emit(state.copyWith(status: AuthLoginStatus.loading));
-    await _authRepository.verifyCode(
+    await _authRepository.sendSmsCode(
       phoneNumber: state.phoneNumberFull,
       onCodeSent: (verificationId, forceResendingToken) =>
           add(OnSmsCodeSent(verificationId, forceResendingToken!)),

@@ -26,7 +26,10 @@ final router = GoRouter(
       path: '/chat',
       builder: (context, state) => const ChatScreen(),
       redirect: (context, state) {
-        if (!getIt<AuthRepository>().alreadyLogin()) {
+        final authRepository = getIt<AuthRepository>();
+        if (authRepository.needVerify()) {
+          return '/auth-verify';
+        } else if (!authRepository.alreadyLogin()) {
           return '/auth-login';
         } else {
           return null;

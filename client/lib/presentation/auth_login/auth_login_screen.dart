@@ -40,7 +40,7 @@ class _AuthLoginViewState extends State<_AuthLoginView> {
 
   @override
   void initState() {
-    _countryCodeController.text = Countries.idn.countryCode;
+    _countryCodeController.text = _authLoginBloc.state.country.countryCode;
     super.initState();
   }
 
@@ -76,7 +76,9 @@ class _AuthLoginViewState extends State<_AuthLoginView> {
                   ),
                   const Text(
                     "What's my number?.",
-                    style: TextStyle(color: WhatsAppTheme.checkmarkBlue),
+                    style: TextStyle(
+                      color: WhatsAppTheme.checkmarkBlue,
+                    ),
                   ),
                   const SizedBox(
                     height: 10,
@@ -116,7 +118,7 @@ class _AuthLoginViewState extends State<_AuthLoginView> {
                                 textAlign: TextAlign.center,
                                 decoration:
                                     const InputDecoration(prefix: Text("+")),
-                                enabled: false,
+                                readOnly: true,
                               ),
                             ),
                             const SizedBox(

@@ -1,3 +1,5 @@
+import 'package:client/data/local/cache.dart';
+import 'package:client/domain/entities/need_verify.dart';
 import 'package:client/domain/repositories/auth_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:injectable/injectable.dart';
@@ -5,19 +7,23 @@ import 'package:injectable/injectable.dart';
 @Injectable(as: AuthRepository)
 class AuthRepositoryImpl extends AuthRepository {
   final FirebaseAuth _firebaseAuth;
+  final Cache _cache;
 
-  AuthRepositoryImpl(this._firebaseAuth);
+  AuthRepositoryImpl(this._firebaseAuth, this._cache);
 
   @override
   User? getUser() => _firebaseAuth.currentUser;
 
   @override
   Future<void> logout() async {
-    _firebaseAuth.signOut();
+    await Future.wait<void>([
+      _firebaseAuth.signOut(),
+      _cache.clear(),
+    ]);
   }
 
   @override
-  Future<void> verifyCode({
+  Future<void> sendSmsCode({
     required String phoneNumber,
     PhoneVerificationCompleted? onVerificationCompleted,
     PhoneVerificationFailed? onVerificationFailed,
@@ -33,7 +39,13 @@ class AuthRepositoryImpl extends AuthRepository {
       verificationFailed: (FirebaseAuthException exception) {
         onVerificationFailed?.call(exception);
       },
-      codeSent: (String verificationId, int? forceResendingToken) {
+      codeSent: (String verificationId, int? forceResendingToken) async {
+        await _cache.putNeedVerify(NeedVerify(
+          phoneNumber: phoneNumber,
+          verificationId: verificationId,
+          token: forceResendingToken ?? -1,
+        ));
+
         onCodeSent?.call(verificationId, forceResendingToken);
       },
       codeAutoRetrievalTimeout: (String verificationId) {},
@@ -44,7 +56,18 @@ class AuthRepositoryImpl extends AuthRepository {
   bool alreadyLogin() => _firebaseAuth.currentUser != null;
 
   @override
-  Future<void> signInWithCredential(AuthCredential credential) async {
-    await _firebaseAuth.signInWithCredential(credential);
+  bool needVerify() => _cache.needVerify() != null;
+
+  @override
+  NeedVerify? getNeedVerify() => _cache.needVerify();
+
+  @override
+  Future<void> verifySmsCode({required String smsCode}) async {
+    final needVerify = getNeedVerify();
+    final credential = PhoneAuthProvider.credential(
+      verificationId: needVerify?.verificationId ?? '',
+      smsCode: smsCode,
+    );
+    _firebaseAuth.signInWithCredential(credential);
   }
 }

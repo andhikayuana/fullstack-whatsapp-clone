@@ -1,5 +1,6 @@
 import 'package:client/di/injection.dart';
 import 'package:client/presentation/auth_login/bloc/auth_login_bloc.dart';
+import 'package:client/presentation/auth_verify/bloc/auth_verify_bloc.dart';
 import 'package:client/presentation/splash/bloc/splash_bloc.dart';
 import 'package:client/router/router.dart';
 import 'package:client/ui/WhatsAppTheme.dart';
@@ -29,6 +30,9 @@ class WhatsAppClone extends StatelessWidget {
         ),
         BlocProvider(
           create: (BuildContext context) => getIt<AuthLoginBloc>(),
+        ),
+        BlocProvider(
+          create: (context) => getIt<AuthVerifyBloc>(),
         ),
       ],
       child: MaterialApp.router(
