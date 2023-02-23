@@ -18,9 +18,9 @@ class DefaultLoading extends StatelessWidget {
       context: context,
       builder: (context) {
         //TODO: please dismiss when the future is done
-        Future.delayed(Duration(seconds: 5), () {
-          Navigator.of(context).pop();
-        });
+        // Future.delayed(Duration(seconds: 5), () {
+        //   Navigator.of(context).pop();
+        // });
         return const DefaultLoading();
       },
     );

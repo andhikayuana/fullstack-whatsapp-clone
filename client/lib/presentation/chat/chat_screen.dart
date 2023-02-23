@@ -24,7 +24,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ElevatedButton(
             onPressed: () async {
               await getIt<AuthRepository>().logout();
-              context.go('/auth');
+              context.go('/auth-login');
             },
             child: Text("Logout"),
           ),

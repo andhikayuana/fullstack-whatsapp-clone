@@ -47,14 +47,16 @@ class __AuthVerifyContentState extends State<_AuthVerifyContent> {
       bloc: _authVerifyBloc,
       listener: (context, state) async {
         //todo
-        if (state.loading) {
-          await DefaultLoading.showDismissable(
-            context: context,
-            dismiss: !state.loading,
-          );
-        } else if (state.verificationCompleted) {
+        if (state.verificationCompleted) {
           context.go('/chat');
+          return;
         }
+        // if (state.loading) {
+        //   await DefaultLoading.showDismissable(
+        //     context: context,
+        //     dismiss: !state.loading,
+        //   );
+        // }
       },
       builder: (context, state) {
         return Form(

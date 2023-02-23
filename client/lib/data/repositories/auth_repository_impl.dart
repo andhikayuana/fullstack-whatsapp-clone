@@ -69,5 +69,6 @@ class AuthRepositoryImpl extends AuthRepository {
       smsCode: smsCode,
     );
     _firebaseAuth.signInWithCredential(credential);
+    await _cache.putNeedVerify(null);
   }
 }

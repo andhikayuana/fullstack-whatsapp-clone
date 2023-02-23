@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:client/domain/repositories/auth_repository.dart';
 import 'package:client/presentation/auth_verify/bloc/auth_verify_event.dart';
 import 'package:client/presentation/auth_verify/bloc/auth_verify_state.dart';
@@ -15,30 +16,37 @@ class AuthVerifyBloc extends Bloc<AuthVerifyEvent, AuthVerifyState> {
       : super(AuthVerifyState.initial(
             phoneNumber: _authRepository.getNeedVerify()?.phoneNumber ?? '')) {
     //todo
-    _setupCountDownTimer();
+    // _setupCountDownTimer();
 
-    on<AuthVerifyEvent>((AuthVerifyEvent event, emit) {
-      event.when(
-        onCodeChanged: (smsCode) {
-          emit(state.copyWith(smsCode: smsCode, loading: false));
-        },
-        onResendSmsClicked: () async {
-          emit(state.copyWith(loading: true));
-          await _authRepository.sendSmsCode(phoneNumber: state.phoneNumber);
-          emit(state.copyWith(countDown: 60, loading: false));
-          _setupCountDownTimer();
-        },
-        onCountDownTicked: (nextCountDown) {
-          emit(state.copyWith(countDown: nextCountDown, loading: false));
-        },
-        onNextClicked: () async {
-          _timer?.cancel();
-          emit(state.copyWith(loading: true));
-          await _authRepository.verifySmsCode(smsCode: state.smsCode);
-          emit(state.copyWith(loading: false));
-        },
-      );
-    });
+    on<AuthVerifyEvent>(
+      (AuthVerifyEvent event, emit) {
+        //todo this, since bloc 8, default concurent not sequential
+
+        event.when(
+          onCodeChanged: (smsCode) {
+            emit(state.copyWith(smsCode: smsCode, loading: false));
+          },
+          onResendSmsClicked: () {
+            // _timer?.cancel();
+            // emit(state.copyWith(loading: true));
+            // await _authRepository.sendSmsCode(phoneNumber: state.phoneNumber);
+            emit(state.copyWith(countDown: 60, loading: false));
+            // _setupCountDownTimer();
+          },
+          onCountDownTicked: (nextCountDown) {
+            emit(state.copyWith(countDown: nextCountDown, loading: false));
+          },
+          onNextClicked: () async {
+            // _timer?.cancel();
+            // emit(state.copyWith(loading: true));
+            await _authRepository.verifySmsCode(smsCode: state.smsCode);
+            // await Future.delayed(Duration(seconds: 5));
+            emit(state.copyWith(loading: false, verificationCompleted: true));
+          },
+        );
+      },
+      transformer: sequential(),
+    );
   }
 
   void _setupCountDownTimer() {
@@ -47,8 +55,8 @@ class AuthVerifyBloc extends Bloc<AuthVerifyEvent, AuthVerifyState> {
       add(AuthVerifyEvent.onCountDownTicked(
         nextCountDown: nextCountDown,
       ));
-      if (nextCountDown == 0 && state.loading) {
-        timer.cancel();
+      if (nextCountDown < 1) {
+        _timer?.cancel();
       }
     });
   }
